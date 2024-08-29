@@ -156,7 +156,7 @@ function M.select_menu_item(force)
     else
         harmux.set_target_config(target)
     end
-    tmux.sendCommand(cmd, target, force)
+    tmux.send_command(cmd, target, force)
 end
 
 function M.on_menu_save()

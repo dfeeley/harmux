@@ -83,12 +83,12 @@ lua require("harpoon.term").gotoTerminal(1)             -- navigates to term 1
 ### Commands to Terminals
 commands can be sent to any terminal
 ```lua
-lua require("harpoon.term").sendCommand(1, "ls -La")    -- sends ls -La to tmux window 1
+lua require("harpoon.term").send_command(1, "ls -La")    -- sends ls -La to tmux window 1
 ```
 further more commands can be stored for later quick
 ```lua
 lua require('harpoon.ui').toggle_quick_menu()       -- shows the commands menu
-lua require("harpoon.term").sendCommand(1, 1)           -- sends command 1 to term 1
+lua require("harpoon.term").send_command(1, 1)           -- sends command 1 to term 1
 ```
 
 ### Tmux Support
@@ -97,14 +97,14 @@ by simply switching `'term' with 'tmux'` like so
 
 ```lua
 lua require("harpoon.tmux").gotoTerminal(1)             -- goes to the first tmux window
-lua require("harpoon.tmux").sendCommand(1, "ls -La")    -- sends ls -La to tmux window 1
-lua require("harpoon.tmux").sendCommand(1, 1)           -- sends command 1 to tmux window 1
+lua require("harpoon.tmux").send_command(1, "ls -La")    -- sends ls -La to tmux window 1
+lua require("harpoon.tmux").send_command(1, 1)           -- sends command 1 to tmux window 1
 ```
 
-`sendCommand` and `goToTerminal` also accept any valid [tmux pane identifier](https://man7.org/linux/man-pages/man1/tmux.1.html#COMMANDS).
+`send_command` and `goToTerminal` also accept any valid [tmux pane identifier](https://man7.org/linux/man-pages/man1/tmux.1.html#COMMANDS).
 ```lua
 lua require("harpoon.tmux").gotoTerminal("{down-of}")   -- focus the pane directly below
-lua require("harpoon.tmux").sendCommand("%3", "ls")     -- send a command to the pane with id '%3'
+lua require("harpoon.tmux").send_command("%3", "ls")     -- send a command to the pane with id '%3'
 ```
 
 Once you switch to a tmux window you can always switch back to neovim, this is a
@@ -141,7 +141,7 @@ global_settings = {
     -- saves the harpoon file upon every change. disabling is unrecommended.
     save_on_change = true,
 
-    -- sets harpoon to run the command immediately as it's passed to the terminal when calling `sendCommand`.
+    -- sets harpoon to run the command immediately as it's passed to the terminal when calling `send_command`.
     enter_on_sendcmd = false,
 
     -- filetypes that you want to prevent from adding to the harpoon list menu.

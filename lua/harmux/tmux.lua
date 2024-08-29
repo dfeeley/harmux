@@ -45,8 +45,8 @@ function M.send_newline(target)
 	end
 end
 
-function M.sendCommand(cmd, target, force, ...)
-    log.trace("tmux: sendCommand(): Window:", target)
+function M.send_command(cmd, target, force, ...)
+    log.trace("tmux: send_command(): Window:", target)
 
     target = target or harmux.get_target_config()
 
@@ -59,7 +59,7 @@ function M.sendCommand(cmd, target, force, ...)
     end
 
     if cmd then
-        log.debug("sendCommand:", cmd)
+        log.debug("send_command:", cmd)
 
         local _, ret, stderr = utils.get_os_command_output({
             "tmux",
