@@ -113,13 +113,13 @@ function M.toggle_quick_menu()
         Harmux_cmd_bufh,
         "n",
         "<CR>",
-        "<Cmd>lua require('harmux.ui').select_menu_item(true)<CR>",
+        "<Cmd>lua require('harmux.ui').select_menu_item(false)<CR>",
         {}
     )
     vim.api.nvim_buf_set_keymap(
         Harmux_cmd_bufh,
         "n",
-        "<C-CR>",
+        "<space><space>",
         "<Cmd>lua require('harmux.ui').select_menu_item(true)<CR>",
         {}
     )
