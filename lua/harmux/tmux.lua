@@ -30,6 +30,21 @@ function M.gotoPane(target)
     end
 end
 
+function M.send_newline(target)
+    target = target or harmux.get_target_config()
+	local _, ret, stderr = utils.get_os_command_output({
+		"tmux",
+		"send-keys",
+		"-t",
+		target,
+		'\n'
+	}, vim.loop.cwd())
+
+	if ret ~= 0 then
+		error("Failed to send command. " .. stderr[1])
+	end
+end
+
 function M.sendCommand(cmd, target, force, ...)
     log.trace("tmux: sendCommand(): Window:", target)
 
