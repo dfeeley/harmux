@@ -72,7 +72,8 @@ local function ensure_correct_config(config)
         log.debug("ensure_correct_config(): No config found for:", cmds_key)
         projects[cmds_key] = {
             cmds = { },
-            target = ".1"
+            target = ".1",
+			last_cmd = nil
         }
     end
 
@@ -228,6 +229,17 @@ function M.get_target_config()
     return ensure_correct_config(HarmuxConfig).projects[cmds_config_key()].target
 end
 
+function M.set_last_cmd_config(last_cmd)
+    log.trace("set_last_cmd_config()")
+    ensure_correct_config(HarmuxConfig).projects[cmds_config_key()].last_cmd = last_cmd
+    M.save()
+end
+
+function M.get_last_cmd_config()
+    log.trace("get_last_cmd_config()")
+    return ensure_correct_config(HarmuxConfig).projects[cmds_config_key()].last_cmd
+end
+
 function M.set_target_config(target)
     log.trace("set_target_config()")
     ensure_correct_config(HarmuxConfig).projects[cmds_config_key()].target = target
@@ -237,18 +249,6 @@ end
 function M.get_cmds_config()
     log.trace("get_cmds_config()")
     return ensure_correct_config(HarmuxConfig).projects[cmds_config_key()].cmds
-end
-
--- DELETE
-function M.get_term_config()
-    log.trace("get_term_config()")
-    return ensure_correct_config(HarmuxConfig).projects[utils.project_key()].term
-end
-
--- DELETE
-function M.get_mark_config()
-    log.trace("get_mark_config()")
-    return ensure_correct_config(HarmuxConfig).projects[cmds_config_key()].mark
 end
 
 function M.get_menu_config()

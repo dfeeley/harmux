@@ -54,12 +54,14 @@ function M.send_command(cmd, target, force, ...)
         cmd = harmux.get_cmds_config()[cmd]
     end
 
-    if force or global_config.enter_on_sendcmd then
-        cmd = cmd .. "\n"
-    end
-
     if cmd then
         log.debug("send_command:", cmd)
+
+		harmux.set_last_cmd_config(cmd)
+
+		if force or global_config.enter_on_sendcmd then
+			cmd = cmd .. "\n"
+		end
 
         local _, ret, stderr = utils.get_os_command_output({
             "tmux",
@@ -73,6 +75,14 @@ function M.send_command(cmd, target, force, ...)
             error("Failed to send command. " .. stderr[1])
         end
     end
+end
+
+function M.send_last_cmd()
+	local last_cmd = harmux.get_last_cmd_config()
+	if last_cmd == nil then
+		return
+	end
+	M.send_command(last_cmd, nil, true)
 end
 
 function M.get_length()
