@@ -45,7 +45,7 @@ function M.send_newline(target)
 	end
 end
 
-function M.send_command(cmd, target, confirm_execute, ...)
+function M.send_command(cmd, target, ...)
     log.trace("tmux: send_command(): Window:", target)
 
     target = target or harmux.get_target_config()
@@ -59,9 +59,7 @@ function M.send_command(cmd, target, confirm_execute, ...)
 
 		harmux.set_last_cmd_config(cmd)
 
-		if confirm_execute ~= true then
-			cmd = cmd .. "\n"
-		end
+		cmd = cmd .. "\n"
 
         local _, ret, stderr = utils.get_os_command_output({
             "tmux",
@@ -82,7 +80,7 @@ function M.send_last_cmd()
 	if last_cmd == nil then
 		return
 	end
-	M.send_command(last_cmd, nil, false)
+	M.send_command(last_cmd, nil)
 end
 
 function M.get_length()

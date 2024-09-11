@@ -113,14 +113,14 @@ function M.toggle_quick_menu()
         Harmux_cmd_bufh,
         "n",
         "<CR>",
-        "<Cmd>lua require('harmux.ui').select_menu_item{confirm_execute=false, confirm_target=false}<CR>",
+        "<Cmd>lua require('harmux.ui').select_menu_item(false)<CR>",
         {}
     )
     vim.api.nvim_buf_set_keymap(
         Harmux_cmd_bufh,
         "n",
         "<space><space>",
-        "<Cmd>lua require('harmux.ui').select_menu_item{confirm_execute=true, confirm_target=true}<CR>",
+        "<Cmd>lua require('harmux.ui').select_menu_item(true)<CR>",
         {}
     )
     vim.cmd(
@@ -145,20 +145,28 @@ function M.toggle_quick_menu()
     )
 end
 
-function M.select_menu_item(options)
+function M.select_menu_item(confirm)
     log.trace("ui#select_menu_item()")
     local cmd = vim.fn.line(".")
+
+    if type(cmd) == "number" then
+        cmd = harmux.get_cmds_config()[cmd]
+    end
+
     local default_target = harmux.get_target_config()
     close_menu(true)
 	local target = default_target
-	if options.confirm_target then
-		target = vim.fn.input("Tmux pane (default to " .. default_target .. "): ")
+	if confirm then
+		target = vim.fn.input({prompt="Run '" .. cmd .. "', Tmux pane (default to " .. default_target .. "): ", cancelreturn=-1})
+		if target == -1 then
+			return
+		end
 		if target == "" then
 			target = default_target
 		end
     end
 	harmux.set_target_config(target)
-    tmux.send_command(cmd, target, options.confirm_execute)
+    tmux.send_command(cmd, target)
 end
 
 function M.on_menu_save()
