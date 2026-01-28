@@ -26,8 +26,8 @@ end
 local function create_window()
     log.trace("_create_window()")
     local config = harmux.get_menu_config()
-    local width = config.width or 60
-    local height = config.height or 10
+    local width = config.width or 80
+    local height = config.height or 20
     local borderchars = config.borderchars
         or { "─", "│", "─", "│", "╭", "╮", "╯", "╰" }
     local bufnr = vim.api.nvim_create_buf(false, false)
