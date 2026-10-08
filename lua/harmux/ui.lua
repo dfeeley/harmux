@@ -137,15 +137,16 @@ function M.toggle_quick_menu()
             )
         )
     end
-    vim.cmd(
-        vim.api.nvim_create_autocmd("OptionSet", { buffer=Harmux_cmd_bufh, callback = function()
+    vim.api.nvim_create_autocmd("OptionSet", { buffer=Harmux_cmd_bufh, callback = function()
           vim.cmd('set nomodified')
     end })
-        string.format(
-            "autocmd BufModifiedSet <buffer=%s> set nomodified",
-            Harmux_cmd_bufh
-        )
-    )
+
+    -- vim.cmd(
+        -- string.format(
+        --     "autocmd BufModifiedSet <buffer=%s> set nomodified",
+        --     Harmux_cmd_bufh
+        -- )
+    -- )
 end
 
 function M.select_menu_item(confirm)
