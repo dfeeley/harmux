@@ -1,6 +1,6 @@
 local Path = require("plenary.path")
-local utils = require("harpoon.utils")
-local Dev = require("harpoon.dev")
+local utils = require("harmux.utils")
+local Dev = require("harmux.dev")
 local log = Dev.log
 
 local config_path = vim.fn.stdpath("config")
