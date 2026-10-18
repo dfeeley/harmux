@@ -1,17 +1,17 @@
 -- Don't include this file, we should manually include it via
--- require("harpoon.dev").reload();
+-- require("harmux.dev").reload();
 --
 -- A quick mapping can be setup using something like:
--- :nmap <leader>rr :lua require("harpoon.dev").reload()<CR>
+-- :nmap <leader>rr :lua require("harmux.dev").reload()<CR>
 local M = {}
 
 function M.reload()
-    require("plenary.reload").reload_module("harpoon")
+    require("plenary.reload").reload_module("harmux")
 end
 
 local log_levels = { "trace", "debug", "info", "warn", "error", "fatal" }
 local function set_log_level()
-    local log_level = vim.env.HARPOON_LOG or vim.g.harpoon_log_level
+    local log_level = vim.env.HARMUX_LOG or vim.g.harmux_log_level
 
     for _, level in pairs(log_levels) do
         if level == log_level then
@@ -24,7 +24,7 @@ end
 
 local log_level = set_log_level()
 M.log = require("plenary.log").new({
-    plugin = "harpoon",
+    plugin = "harmux",
     level = log_level,
 })
 

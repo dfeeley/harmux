@@ -26,6 +26,8 @@ end
 local function create_window()
     log.trace("_create_window()")
     local config = harmux.get_menu_config()
+    print(config.width)
+    print(config.height)
     local width = config.width or 80
     local height = config.height or 20
     local borderchars = config.borderchars

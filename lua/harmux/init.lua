@@ -8,27 +8,39 @@ local data_path = vim.fn.stdpath("data")
 local user_config = string.format("%s/harmux.json", config_path)
 local cache_config = string.format("%s/harmux.json", data_path)
 
+
 local M = {}
 
 --[[
 {
-    projects = {
-        ["/path/to/director"] = {
-            term = {
-                cmds = {
-                }
-                ... is there anything that could be options?
-            },
-            mark = {
-                marks = {
-                }
-                ... is there anything that could be options?
-            }
-        }
+  "projects": {
+    "/path/to/some/dir": {
+      "cmds": [
+        "make build deploy"
+      ],
+      "last_cmd": "make build deploy",
+      "target": ".2"
     },
-    ... high level settings
+  },
+  "global_settings": {
+    "menu": {
+      "width": 80,
+      "height": 30
+    },
+    "save_on_toggle": false,
+    "tabline": false,
+    "excluded_filetypes": [
+      "harpoon"
+    ],
+    "save_on_change": true,
+    "tabline_suffix": "   ",
+    "enter_on_sendcmd": false,
+    "tabline_prefix": "   ",
+    "tmux_autoclose_windows": false
+  }
 }
 --]]
+
 HarmuxConfig = HarmuxConfig or {}
 
 -- tbl_deep_extend does not work the way you would think
@@ -46,15 +58,6 @@ local function merge_table_impl(t1, t2)
     end
 end
 
-local function cmds_config_key(global_settings)
-    global_settings = global_settings or M.get_global_settings()
-    if global_settings.mark_branch then
-        return utils.branch_key()
-    else
-        return utils.project_key()
-    end
-end
-
 local function merge_tables(...)
     log.trace("_merge_tables()")
     local out = {}
@@ -67,13 +70,13 @@ end
 local function ensure_correct_config(config)
     log.trace("_ensure_correct_config()")
     local projects = config.projects
-    local cmds_key = cmds_config_key(config.global_settings)
+    local cmds_key = utils.project_key()
     if projects[cmds_key] == nil then
         log.debug("ensure_correct_config(): No config found for:", cmds_key)
         projects[cmds_key] = {
-            cmds = { },
-            target = ".1",
-			last_cmd = nil
+          cmds = { },
+          target = ".1",
+          last_cmd = ""
         }
     end
 
@@ -91,22 +94,13 @@ local function ensure_correct_config(config)
         proj.target = ".1"
     end
 
-    return config
-end
-
-local function expand_dir(config)
-    log.trace("_expand_dir(): Config pre-expansion:", config)
-
-    local projects = config.projects or {}
-    for k in pairs(projects) do
-        local expanded_path = Path.new(k):expand()
-        projects[expanded_path] = projects[k]
-        if expanded_path ~= k then
-            projects[k] = nil
-        end
-    end
-
-    log.trace("_expand_dir(): Config post-expansion:", config)
+    if proj.last_cmd == nil then
+        log.debug(
+            "ensure_correct_config(): No default last_cmd found for",
+            cmds_key
+        )
+        proj.last_cmd = ""
+      end
     return config
 end
 
@@ -123,7 +117,6 @@ local function read_config(local_config)
     return vim.json.decode(Path:new(local_config):read())
 end
 
--- 1. saved.  Where do we save?
 function M.setup(config)
     log.trace("setup(): Setting up...")
 
@@ -148,17 +141,20 @@ function M.setup(config)
     local complete_config = merge_tables({
         projects = {},
         global_settings = {
+            ["menu"] = {
+              ["width"] = 80,
+              ["height"] = 20,
+            },
             ["save_on_toggle"] = false,
             ["save_on_change"] = true,
             ["enter_on_sendcmd"] = false,
             ["tmux_autoclose_windows"] = false,
             ["excluded_filetypes"] = { "harpoon" },
-            ["mark_branch"] = false,
             ["tabline"] = false,
             ["tabline_suffix"] = "   ",
             ["tabline_prefix"] = "   ",
         },
-    }, expand_dir(c_config), expand_dir(u_config), expand_dir(config))
+    }, c_config, u_config, config)
 
     -- There was this issue where the vim.loop.cwd() didn't have marks or term, but had
     -- an object for vim.loop.cwd()
@@ -182,7 +178,7 @@ function M.refresh_projects_b4update()
         cache_config
     )
     -- save current runtime version of our project config for merging back in later
-    local cwd = cmds_config_key()
+    local cwd = utils.project_key()
     local current_p_config = {
         projects = {
             [cwd] = ensure_correct_config(HarmuxConfig).projects[cwd],
@@ -211,8 +207,8 @@ function M.refresh_projects_b4update()
 
     local complete_config = merge_tables(
         HarmuxConfig,
-        expand_dir(c_config),
-        expand_dir(current_p_config)
+        c_config,
+        current_p_config
     )
 
     -- There was this issue where the vim.loop.cwd() didn't have marks or term, but had
@@ -226,34 +222,34 @@ end
 
 function M.get_target_config()
     log.trace("get_target_config()")
-    return ensure_correct_config(HarmuxConfig).projects[cmds_config_key()].target
+    return ensure_correct_config(HarmuxConfig).projects[utils.project_key()].target
 end
 
 function M.set_last_cmd_config(last_cmd)
     log.trace("set_last_cmd_config()")
-    ensure_correct_config(HarmuxConfig).projects[cmds_config_key()].last_cmd = last_cmd
+    ensure_correct_config(HarmuxConfig).projects[utils.project_key()].last_cmd = last_cmd
     M.save()
 end
 
 function M.get_last_cmd_config()
     log.trace("get_last_cmd_config()")
-    return ensure_correct_config(HarmuxConfig).projects[cmds_config_key()].last_cmd
+    return ensure_correct_config(HarmuxConfig).projects[utils.project_key()].last_cmd
 end
 
 function M.set_target_config(target)
     log.trace("set_target_config()")
-    ensure_correct_config(HarmuxConfig).projects[cmds_config_key()].target = target
+    ensure_correct_config(HarmuxConfig).projects[utils.project_key()].target = target
     M.save()
 end
 
 function M.get_cmds_config()
     log.trace("get_cmds_config()")
-    return ensure_correct_config(HarmuxConfig).projects[cmds_config_key()].cmds
+    return ensure_correct_config(HarmuxConfig).projects[utils.project_key()].cmds
 end
 
 function M.get_menu_config()
     log.trace("get_menu_config()")
-    return HarmuxConfig.menu or {}
+    return HarmuxConfig.global_settings.menu or {}
 end
 
 -- should only be called for debug purposes
