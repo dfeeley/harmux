@@ -26,8 +26,6 @@ end
 local function create_window()
     log.trace("_create_window()")
     local config = harmux.get_menu_config()
-    print(config.width)
-    print(config.height)
     local width = config.width or 80
     local height = config.height or 20
     local borderchars = config.borderchars
@@ -91,23 +89,16 @@ function M.toggle_quick_menu()
         contents[idx] = cmd
     end
 
-    vim.api.nvim_win_set_option(Harmux_cmd_win_id, "number", true)
+    vim.api.nvim_set_option_value("number", true, {win=Harmux_cmd_win_id})
     vim.api.nvim_buf_set_name(Harmux_cmd_bufh, "harmux-cmd-menu")
     vim.api.nvim_buf_set_lines(Harmux_cmd_bufh, 0, #contents, false, contents)
-    vim.api.nvim_buf_set_option(Harmux_cmd_bufh, "filetype", "harmux")
-    vim.api.nvim_buf_set_option(Harmux_cmd_bufh, "buftype", "acwrite")
-    vim.api.nvim_buf_set_option(Harmux_cmd_bufh, "bufhidden", "delete")
+    vim.api.nvim_set_option_value("filetype", "harmux", {buf=Harmux_cmd_bufh})
+    vim.api.nvim_set_option_value("buftype", "acwrite", {buf=Harmux_cmd_bufh})
+    vim.api.nvim_set_option_value("bufhidden", "delete", {buf=Harmux_cmd_bufh})
     vim.api.nvim_buf_set_keymap(
         Harmux_cmd_bufh,
         "n",
         "q",
-        "<Cmd>lua require('harmux.ui').toggle_quick_menu()<CR>",
-        { silent = true }
-    )
-    vim.api.nvim_buf_set_keymap(
-        Harmux_cmd_bufh,
-        "n",
-        "<ESC>",
         "<Cmd>lua require('harmux.ui').toggle_quick_menu()<CR>",
         { silent = true }
     )
@@ -124,6 +115,20 @@ function M.toggle_quick_menu()
         "<space><space>",
         "<Cmd>lua require('harmux.ui').select_menu_item(true)<CR>",
         {}
+    )
+    vim.api.nvim_buf_set_keymap(
+        Harmux_cmd_bufh,
+        "n",
+        "st",
+        "<Cmd>lua require('harmux.ui').select_target()<CR>",
+        { silent = true }
+    )
+    vim.api.nvim_buf_set_keymap(
+        Harmux_cmd_bufh,
+        "n",
+        "gg",
+        "<Cmd>lua require('harmux.tmux').goto_pane()<CR>",
+        { silent = true }
     )
     vim.cmd(
         string.format(
@@ -151,28 +156,37 @@ function M.toggle_quick_menu()
     -- )
 end
 
-function M.select_menu_item(confirm)
-    log.trace("ui#select_menu_item()")
-    local cmd = vim.fn.line(".")
-
-    if type(cmd) == "number" then
-        cmd = harmux.get_cmds_config()[cmd]
-    end
-
+function M.select_target()
     local default_target = harmux.get_target_config()
-    close_menu(true)
-	local target = default_target
-	if confirm then
-		target = vim.fn.input({prompt="Run '" .. cmd .. "', Tmux pane (default to " .. default_target .. "): ", cancelreturn=-1})
-		if target == -1 then
-			return
-		end
-		if target == "" then
-			target = default_target
-		end
+    local target = default_target
+    target = vim.fn.input({prompt="Select tmux pane (currently " .. default_target .. "): ", cancelreturn=-1})
+    if target == -1 then
+        return
     end
-	harmux.set_target_config(target)
-    tmux.send_command(cmd, target)
+    if target == "" then
+        target = default_target
+    end
+    harmux.set_target_config(target)
+end
+
+function M.select_menu_item(confirm)
+  log.trace("ui#select_menu_item()")
+  local cmd = vim.fn.line(".")
+
+  local default_target = harmux.get_target_config()
+  close_menu(true)
+  local target = default_target
+  if confirm then
+    target = vim.fn.input({prompt="Run '" .. cmd .. "', Tmux pane (default to " .. default_target .. "): ", cancelreturn=-1})
+    if target == -1 then
+      return
+    end
+    if target == "" then
+      target = default_target
+    end
+  end
+  harmux.set_target_config(target)
+  tmux.send_command(cmd, target)
 end
 
 function M.on_menu_save()

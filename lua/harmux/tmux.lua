@@ -1,22 +1,13 @@
 local harmux = require("harmux")
 local log = require("harmux.dev").log
-local global_config = harmux.get_global_settings()
 local utils = require("harmux.utils")
 
 local M = {}
 
-local function get_first_empty_slot()
-    log.trace("_get_first_empty_slot()")
-    for idx, cmd in pairs(harmux.get_cmds_config()) do
-        if cmd == "" then
-            return idx
-        end
-    end
-    return M.get_length() + 1
-end
+function M.goto_pane(target)
+    log.trace("tmux: goto_pane(): :", target)
 
-function M.gotoPane(target)
-    log.trace("tmux: gotoPane(): :", target)
+    target = target or harmux.get_target_config()
 
     local _, ret, stderr = utils.get_os_command_output({
         "tmux",
@@ -42,9 +33,9 @@ function M.send_command(cmd, target, ...)
     if cmd then
         log.debug("send_command:", cmd)
 
-		harmux.set_last_cmd_config(cmd)
+        harmux.set_last_cmd_config(cmd)
 
-		cmd = cmd .. "\n"
+        cmd = cmd .. "\n"
 
         local _, ret, stderr = utils.get_os_command_output({
             "tmux",
@@ -61,23 +52,11 @@ function M.send_command(cmd, target, ...)
 end
 
 function M.send_last_cmd()
-	local last_cmd = harmux.get_last_cmd_config()
-	if last_cmd == nil then
-		return
-	end
-	M.send_command(last_cmd, nil)
-end
-
-function M.get_length()
-    log.trace("_get_length()")
-    return table.maxn(harmux.get_cmds_config())
-end
-
-function M.valid_index(idx)
-    if idx == nil or idx > M.get_length() or idx <= 0 then
-        return false
+    local last_cmd = harmux.get_last_cmd_config()
+    if last_cmd == nil then
+        return
     end
-    return true
+    M.send_command(last_cmd, nil)
 end
 
 function M.emit_changed()
@@ -85,23 +64,6 @@ function M.emit_changed()
     if harmux.get_global_settings().save_on_change then
         harmux.save()
     end
-end
-
-function M.add_cmd(cmd)
-    log.trace("add_cmd()")
-    local found_idx = get_first_empty_slot()
-    harmux.get_cmds_config()[found_idx] = cmd
-    M.emit_changed()
-end
-
-function M.rm_cmd(idx)
-    log.trace("rm_cmd()")
-    if not M.valid_index(idx) then
-        log.debug("rm_cmd(): no cmd exists for index", idx)
-        return
-    end
-    table.remove(harmux.get_cmds_config(), idx)
-    M.emit_changed()
 end
 
 function M.set_cmd_list(new_list)
