@@ -21,7 +21,7 @@ function M.goto_pane(target)
     end
 end
 
-function M.send_command(cmd, target)
+function M.send_command(cmd, target, ...)
     log.trace("tmux: send_command(): Window:", target)
 
     target = target or harmux.get_target_config()
